@@ -1,6 +1,11 @@
 package schoo.sptech.be_amante_livro.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+import java.util.List;
 
 @Entity
 @Table(name = "livro")
@@ -10,12 +15,14 @@ public class Livro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idLivro;
 
-    @Column(nullable = false, length = 200)
+    @NotBlank(message = "Título é obrigatório")
+    @Size(min = 3, max = 200)
     private String titulo;
 
-    @Column(length = 20)
+    @Size(max = 20)
     private String isbn;
 
+    @Min(value = 0, message = "Ano inválido")
     private Integer anoPublicacao;
 
     @ManyToOne
@@ -23,8 +30,11 @@ public class Livro {
     private Autor autor;
 
     @ManyToOne
-    @JoinColumn(name = "id_editora") // aq eu falo pro JPA q esse é o nome da coluna para ele n criar um diferente.
+    @JoinColumn(name = "id_editora")
     private Editora editora;
+
+    @OneToMany(mappedBy = "livro")
+    private List<Exemplar> exemplares;
 
     public Integer getIdLivro() {
         return idLivro;
@@ -34,27 +44,27 @@ public class Livro {
         this.idLivro = idLivro;
     }
 
-    public String getTitulo() {
+    public @NotBlank(message = "Título é obrigatório") @Size(min = 3, max = 200) String getTitulo() {
         return titulo;
     }
 
-    public void setTitulo(String titulo) {
+    public void setTitulo(@NotBlank(message = "Título é obrigatório") @Size(min = 3, max = 200) String titulo) {
         this.titulo = titulo;
     }
 
-    public String getIsbn() {
+    public @Size(max = 20) String getIsbn() {
         return isbn;
     }
 
-    public void setIsbn(String isbn) {
+    public void setIsbn(@Size(max = 20) String isbn) {
         this.isbn = isbn;
     }
 
-    public Integer getAnoPublicacao() {
+    public @Min(value = 0, message = "Ano inválido") Integer getAnoPublicacao() {
         return anoPublicacao;
     }
 
-    public void setAnoPublicacao(Integer anoPublicacao) {
+    public void setAnoPublicacao(@Min(value = 0, message = "Ano inválido") Integer anoPublicacao) {
         this.anoPublicacao = anoPublicacao;
     }
 

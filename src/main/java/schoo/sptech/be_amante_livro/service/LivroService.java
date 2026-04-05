@@ -1,17 +1,23 @@
 package schoo.sptech.be_amante_livro.service;
 
-
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
+import schoo.sptech.be_amante_livro.dto.LivroRequestDto;
+import schoo.sptech.be_amante_livro.dto.LivroResponseDto;
+import schoo.sptech.be_amante_livro.exception.AutorNaoEncontradoException;
+import schoo.sptech.be_amante_livro.exception.EditoraNaoEncontradaException;
 import schoo.sptech.be_amante_livro.exception.LivroNaoEncontradoException;
+import schoo.sptech.be_amante_livro.mapper.LivroMapper;
 import schoo.sptech.be_amante_livro.model.Autor;
 import schoo.sptech.be_amante_livro.model.Editora;
 import schoo.sptech.be_amante_livro.model.Livro;
 import schoo.sptech.be_amante_livro.repository.AutorRepository;
 import schoo.sptech.be_amante_livro.repository.EditoraRepository;
+import schoo.sptech.be_amante_livro.repository.ExemplarRepository;
 import schoo.sptech.be_amante_livro.repository.LivroRepository;
 
-
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LivroService {
@@ -19,59 +25,102 @@ public class LivroService {
     private final LivroRepository livroRepository;
     private final AutorRepository autorRepository;
     private final EditoraRepository editoraRepository;
+    private final ExemplarRepository exemplarRepository;
 
     public LivroService(LivroRepository livroRepository,
                         AutorRepository autorRepository,
-                        EditoraRepository editoraRepository) {
+                        EditoraRepository editoraRepository, ExemplarRepository exemplarRepository) {
         this.livroRepository = livroRepository;
         this.autorRepository = autorRepository;
         this.editoraRepository = editoraRepository;
+        this.exemplarRepository = exemplarRepository;
     }
 
-    public Livro criar(Livro livro, Integer autorId, Integer editoraId) {
+    public LivroResponseDto cadastrar(@Valid LivroRequestDto dto) {
 
-        Autor autor = autorRepository.findById(autorId)
-                .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
+        Optional<Autor> autorOpt = autorRepository.findById(dto.getIdAutor());
+        if (autorOpt.isEmpty()) {
+            throw new LivroNaoEncontradoException(dto.getIdAutor());
+        }
 
-        Editora editora = editoraRepository.findById(editoraId)
-                .orElseThrow(() -> new RuntimeException("Editora não encontrada"));
+        Optional<Editora> editoraOpt = editoraRepository.findById(dto.getIdEditora());
+        if (editoraOpt.isEmpty()) {
+            throw new EditoraNaoEncontradaException(dto.getIdEditora());
+        }
 
-        livro.setAutor(autor);
-        livro.setEditora(editora);
+        Autor autor = autorOpt.get();
+        Editora editora = editoraOpt.get();
 
-        return livroRepository.save(livro);
+        Livro livro = new LivroMapper().toEntity(dto, autor, editora);
+
+        Livro salvo = livroRepository.save(livro);
+
+        return LivroMapper.toResponse(salvo);
     }
 
-    public List<Livro> listar() {
-        return livroRepository.findAll();
+
+    public List<LivroResponseDto> listar() {
+
+        List<Livro> livros = livroRepository.findAll();
+
+        return LivroMapper.toResponseDtoList(livros);
     }
 
-    public Livro buscarPorId(Integer id) {
-        return livroRepository.findById(id)
-                .orElseThrow(() -> new LivroNaoEncontradoException(id));
+
+    public LivroResponseDto buscarPorId(Integer id) {
+
+        Optional<Livro> livroOpt = livroRepository.findById(id);
+
+        if (livroOpt.isEmpty()) {
+            throw new LivroNaoEncontradoException(id);
+        }
+
+        return LivroMapper.toResponse(livroOpt.get());
     }
 
-    public Livro atualizar(Integer id, Livro livro, Integer autorId, Integer editoraId) {
 
-        Livro existente = buscarPorId(id);
+    public LivroResponseDto atualizar(Integer id, @Valid LivroRequestDto dto) {
 
-        Autor autor = autorRepository.findById(autorId)
-                .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
+        Optional<Livro> livroOpt = livroRepository.findById(id);
+        if (livroOpt.isEmpty()) {
+            throw new LivroNaoEncontradoException(id);
+        }
 
-        Editora editora = editoraRepository.findById(editoraId)
-                .orElseThrow(() -> new RuntimeException("Editora não encontrada"));
+        Optional<Autor> autorOpt = autorRepository.findById(dto.getIdAutor());
+        if (autorOpt.isEmpty()) {
+            throw new AutorNaoEncontradoException(dto.getIdAutor());
+        }
 
-        existente.setTitulo(livro.getTitulo());
-        existente.setIsbn(livro.getIsbn());
-        existente.setAnoPublicacao(livro.getAnoPublicacao());
-        existente.setAutor(autor);
-        existente.setEditora(editora);
+        Optional<Editora> editoraOpt = editoraRepository.findById(dto.getIdEditora());
+        if (editoraOpt.isEmpty()) {
+            throw new EditoraNaoEncontradaException(dto.getIdEditora());
+        }
 
-        return livroRepository.save(existente);
+        Livro livro = livroOpt.get();
+
+        livro.setTitulo(dto.getTitulo());
+        livro.setIsbn(dto.getIsbn());
+        livro.setAnoPublicacao(dto.getAnoPublicacao());
+        livro.setAutor(autorOpt.get());
+        livro.setEditora(editoraOpt.get());
+
+        Livro atualizado = livroRepository.save(livro);
+
+        return LivroMapper.toResponse(atualizado);
     }
 
     public void deletar(Integer id) {
-        Livro livro = buscarPorId(id);
-        livroRepository.delete(livro);
+
+        Optional<Livro> livroOpt = livroRepository.findById(id);
+
+        if (livroOpt.isEmpty()) {
+            throw new LivroNaoEncontradoException(id);
+        }
+
+        if (exemplarRepository.existsByLivroIdLivro(id)) {
+            throw new RuntimeException("Não é possível excluir livro que possui exemplares cadastrados");
+        }
+
+        livroRepository.deleteById(id);
     }
 }

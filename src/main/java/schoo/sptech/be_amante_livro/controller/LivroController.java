@@ -1,59 +1,68 @@
 package schoo.sptech.be_amante_livro.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import schoo.sptech.be_amante_livro.dto.LivroRequestDto;
 import schoo.sptech.be_amante_livro.dto.LivroResponseDto;
-import schoo.sptech.be_amante_livro.mapper.LivroMapper;
-import schoo.sptech.be_amante_livro.model.Livro;
 import schoo.sptech.be_amante_livro.service.LivroService;
-import java.util.List;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
 @RestController
 @RequestMapping("/livros")
 public class LivroController {
 
-    private final LivroService service;
+    private final LivroService livroService;
 
-    public LivroController(LivroService service) {
-        this.service = service;
+    public LivroController(LivroService livroService) {
+        this.livroService = livroService;
     }
 
     @PostMapping
-    public ResponseEntity<LivroResponseDto> criar(@RequestBody @Valid LivroRequestDto dto) {
-        Livro livro = LivroMapper.toEntity(dto);
-        Livro criado = service.criar(livro, dto.getAutorId(), dto.getEditoraId());
-        return ResponseEntity.status(201).body(LivroMapper.toResponseDto(criado));
+    public ResponseEntity<LivroResponseDto> cadastrar(@RequestBody @Valid LivroRequestDto dto) {
+
+        LivroResponseDto resposta = livroService.cadastrar(dto);
+
+        return ResponseEntity.status(201).body(resposta);
     }
+
 
     @GetMapping
     public ResponseEntity<List<LivroResponseDto>> listar() {
-        List<Livro> livros = service.listar();
-        return ResponseEntity.ok(LivroMapper.toResponseDtoList(livros));
+
+        List<LivroResponseDto> lista = livroService.listar();
+
+        if (lista.isEmpty()) {
+            return ResponseEntity.status(204).build();
+        }
+
+        return ResponseEntity.status(200).body(lista);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<LivroResponseDto> buscarPorId(@PathVariable Integer id) {
-        Livro livro = service.buscarPorId(id);
-        return ResponseEntity.ok(LivroMapper.toResponseDto(livro));
+
+        LivroResponseDto dto = livroService.buscarPorId(id);
+
+        return ResponseEntity.status(200).body(dto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LivroResponseDto> atualizar(@PathVariable Integer id,
-                                                      @RequestBody @Valid LivroRequestDto dto) {
-        Livro livro = LivroMapper.toEntity(dto);
-        Livro atualizado = service.atualizar(id, livro, dto.getAutorId(), dto.getEditoraId());
-        return ResponseEntity.ok(LivroMapper.toResponseDto(atualizado));
+    public ResponseEntity<LivroResponseDto> atualizar(
+            @PathVariable Integer id,
+            @RequestBody @Valid LivroRequestDto dto) {
+
+        LivroResponseDto atualizado = livroService.atualizar(id, dto);
+
+        return ResponseEntity.status(200).body(atualizado);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Integer id) {
-        service.deletar(id);
-        return ResponseEntity.noContent().build();
+
+        livroService.deletar(id);
+
+        return ResponseEntity.status(204).build();
     }
 }

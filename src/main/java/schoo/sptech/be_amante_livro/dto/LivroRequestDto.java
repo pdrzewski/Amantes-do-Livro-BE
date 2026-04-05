@@ -13,17 +13,17 @@ public class LivroRequestDto {
 
     @NotNull
     @Positive
-    private Integer autorId;
+    private Integer idAutor;
 
     @NotNull
     @Positive
-    private Integer editoraId;
+    private Integer idEditora;
 
-    public String getTitulo() {
+    public @NotBlank String getTitulo() {
         return titulo;
     }
 
-    public void setTitulo(String titulo) {
+    public void setTitulo(@NotBlank String titulo) {
         this.titulo = titulo;
     }
 
@@ -43,19 +43,19 @@ public class LivroRequestDto {
         this.anoPublicacao = anoPublicacao;
     }
 
-    public Integer getAutorId() {
-        return autorId;
+    public @NotNull @Positive Integer getIdAutor() {
+        return idAutor;
     }
 
-    public void setAutorId(Integer autorId) {
-        this.autorId = autorId;
+    public void setIdAutor(@NotNull @Positive Integer idAutor) {
+        this.idAutor = idAutor;
     }
 
-    public Integer getEditoraId() {
-        return editoraId;
+    public @NotNull @Positive Integer getIdEditora() {
+        return idEditora;
     }
 
-    public void setEditoraId(Integer editoraId) {
-        this.editoraId = editoraId;
+    public void setIdEditora(@NotNull @Positive Integer idEditora) {
+        this.idEditora = idEditora;
     }
 }
