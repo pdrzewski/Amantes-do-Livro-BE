@@ -1,7 +1,7 @@
 package schoo.sptech.be_amante_livro.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,13 +15,18 @@ public class Exemplar {
     @JoinColumn(name = "id_livro")
     private Livro livro;
 
-    private String codigoBarras;
+    @ManyToOne
+    @JoinColumn(name = "id_condicao")
+    private Condicao condicao;
 
-    private BigDecimal preco;
+    @ManyToOne
+    @JoinColumn(name = "id_status")
+    private StatusExemplar status;
 
+    private Integer quantidade;
+    private Double preco;
     private LocalDateTime dataEntrada;
 
-    // getters e setters
     public Integer getIdExemplar() {
         return idExemplar;
     }
@@ -38,20 +43,28 @@ public class Exemplar {
         this.livro = livro;
     }
 
-    public String getCodigoBarras() {
-        return codigoBarras;
+    public Condicao getCondicao() {
+        return condicao;
     }
 
-    public void setCodigoBarras(String codigoBarras) {
-        this.codigoBarras = codigoBarras;
+    public void setCondicao(Condicao condicao) {
+        this.condicao = condicao;
     }
 
-    public BigDecimal getPreco() {
+    public Double getPreco() {
         return preco;
     }
 
-    public void setPreco(BigDecimal preco) {
+    public void setPreco(Double preco) {
         this.preco = preco;
+    }
+
+    public Integer getQuantidade() {
+        return quantidade;
+    }
+
+    public void setQuantidade(Integer quantidade) {
+        this.quantidade = quantidade;
     }
 
     public LocalDateTime getDataEntrada() {
@@ -61,4 +74,6 @@ public class Exemplar {
     public void setDataEntrada(LocalDateTime dataEntrada) {
         this.dataEntrada = dataEntrada;
     }
+
+
 }
