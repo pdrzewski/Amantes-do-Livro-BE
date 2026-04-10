@@ -11,7 +11,7 @@ import java.util.Optional;
 @Service
 public class CondicaoService {
 
-
+    @Autowired
     private CondicaoRepository repository;
 
     public Condicao buscarPorId(Integer id) {
