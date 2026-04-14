@@ -1,15 +1,6 @@
-package schoo.sptech.be_amante_livro.model;
+package schoo.sptech.be_amante_livro.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
-@Entity
-public class Condicao {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class CondicaoResponseDto {
     private Integer idCondicao;
 
     private String nomeCondicao;

@@ -8,7 +8,7 @@ package schoo.sptech.be_amante_livro.dto;
         private Double preco;
         private Integer quantidade;
         private LivroResumoDto livro;
-        private CondicaoDto condicao;
+        private CondicaoRequestDto condicao;
 
 
         public Integer getIdExemplar() {
@@ -43,11 +43,11 @@ package schoo.sptech.be_amante_livro.dto;
             this.livro = livro;
         }
 
-        public CondicaoDto getCondicao() {
+        public CondicaoRequestDto getCondicao() {
             return condicao;
         }
 
-        public void setCondicao(CondicaoDto condicao) {
+        public void setCondicao(CondicaoRequestDto condicao) {
             this.condicao = condicao;
         }
     }
