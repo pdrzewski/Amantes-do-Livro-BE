@@ -49,8 +49,7 @@ public class CondicaoService {
 
     public void deletar(Integer id) {
         Condicao condicao = repository.findById(id)
-                .orElseThrow(() -> new AutorNaoEncontradoException(id));
-
+                .orElseThrow(() -> new CondicaoNaoEncontradaException(id));
 
         repository.deleteById(id);
     }
