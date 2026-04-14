@@ -1,6 +1,6 @@
 package schoo.sptech.be_amante_livro.mapper;
 
-import schoo.sptech.be_amante_livro.dto.CondicaoDto;
+import schoo.sptech.be_amante_livro.dto.CondicaoRequestDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarRequestDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarResponseDto;
 import schoo.sptech.be_amante_livro.dto.LivroResumoDto;
@@ -51,7 +51,7 @@ public class ExemplarMapper {
 
 
         if (exemplar.getCondicao() != null) {
-            CondicaoDto condicaoDto = new CondicaoDto();
+            CondicaoRequestDto condicaoDto = new CondicaoRequestDto();
 
             condicaoDto.setId(exemplar.getCondicao().getIdCondicao());
             condicaoDto.setNome(exemplar.getCondicao().getNomeCondicao());
