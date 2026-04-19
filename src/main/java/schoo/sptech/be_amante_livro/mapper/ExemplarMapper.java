@@ -53,8 +53,7 @@ public class ExemplarMapper {
         if (exemplar.getCondicao() != null) {
             CondicaoRequestDto condicaoDto = new CondicaoRequestDto();
 
-            condicaoDto.setId(exemplar.getCondicao().getIdCondicao());
-            condicaoDto.setNome(exemplar.getCondicao().getNomeCondicao());
+            condicaoDto.setNomeCondicao(exemplar.getCondicao().getNomeCondicao());
 
             dto.setCondicao(condicaoDto);
         }

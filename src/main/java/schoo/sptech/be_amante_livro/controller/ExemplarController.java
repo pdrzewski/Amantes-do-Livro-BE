@@ -1,10 +1,14 @@
 package schoo.sptech.be_amante_livro.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import schoo.sptech.be_amante_livro.dto.AdicionarMassaDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarRequestDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarResponseDto;
+import schoo.sptech.be_amante_livro.service.AdicionarMassaService;
 import schoo.sptech.be_amante_livro.service.ExemplarService;
 
 import java.util.List;
@@ -14,10 +18,13 @@ import java.util.List;
 public class ExemplarController {
 
     private final ExemplarService service;
+    private final AdicionarMassaService adicionarMassaService;
 
-    public ExemplarController(ExemplarService service) {
+    public ExemplarController(ExemplarService service, AdicionarMassaService adicionarMassaService) {
         this.service = service;
+        this.adicionarMassaService = adicionarMassaService;
     }
+
 
     @PostMapping
     public ResponseEntity<ExemplarResponseDto> cadastrar(@Valid @RequestBody ExemplarRequestDto dto) {
@@ -64,5 +71,18 @@ public class ExemplarController {
         service.baixarEstoque(id, qtd);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/importar-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AdicionarMassaDto> importarCsv(
+            @RequestPart("arquivo") MultipartFile arquivo) {
+
+        AdicionarMassaDto resultado = adicionarMassaService.importarEstanteVirtual(arquivo);
+
+        if (resultado.getSucesso() == 0) {
+            return ResponseEntity.badRequest().body(resultado);
+        }
+
+        return ResponseEntity.status(207).body(resultado);
     }
 }
