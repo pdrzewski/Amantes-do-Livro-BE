@@ -1,6 +1,8 @@
 package schoo.sptech.be_amante_livro.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import schoo.sptech.be_amante_livro.dto.DeletarMassaDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarRequestDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarResponseDto;
 import schoo.sptech.be_amante_livro.exception.CondicaoNaoEncontradaException;
@@ -14,6 +16,10 @@ import schoo.sptech.be_amante_livro.repository.CondicaoRepository;
 import schoo.sptech.be_amante_livro.repository.ExemplarRepository;
 import schoo.sptech.be_amante_livro.repository.LivroRepository;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -144,4 +150,52 @@ public class ExemplarService {
 
         exemplarRepository.save(exemplar);
     }
+
+    public DeletarMassaDto deletarEmMassa(MultipartFile arquivo) {
+        if (arquivo.isEmpty()) {
+            throw new RuntimeException("Arquivo CSV não pode estar vazio");
+        }
+
+        List<String> erros = new ArrayList<>();
+        int sucesso = 0;
+        int totalLinhas = 0;
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(arquivo.getInputStream(), StandardCharsets.UTF_8))) {
+
+            String linha;
+            boolean primeiraLinha = true;
+
+            while ((linha = reader.readLine()) != null) {
+                if (primeiraLinha) { primeiraLinha = false; continue; }
+                if (linha.isBlank()) continue;
+
+                totalLinhas++;
+
+                try {
+                    String[] col = linha.split(";", -1);
+                    if (col.length < 1) {
+                        throw new IllegalArgumentException("Esperado pelo menos 1 coluna (idExemplar)");
+                    }
+
+                    Integer idExemplar = Integer.parseInt(col[0].trim());
+                    deletar(idExemplar);  // Reutiliza o método existente
+                    sucesso++;
+
+                } catch (NumberFormatException e) {
+                    erros.add("Linha " + totalLinhas + ": ID inválido → " + linha);
+                } catch (ExemplarNaoEncontradoException e) {
+                    erros.add("Linha " + totalLinhas + ": Exemplar não encontrado ");
+                } catch (Exception e) {
+                    erros.add("Linha " + totalLinhas + ": Erro inesperado → " + e.getMessage());
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao ler o arquivo CSV: " + e.getMessage());
+        }
+
+        return new DeletarMassaDto(totalLinhas, sucesso, erros.size(), erros);
+    }
+
 }

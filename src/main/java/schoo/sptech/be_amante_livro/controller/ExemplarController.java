@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import schoo.sptech.be_amante_livro.dto.AdicionarMassaDto;
+import schoo.sptech.be_amante_livro.dto.DeletarMassaDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarRequestDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarResponseDto;
 import schoo.sptech.be_amante_livro.service.AdicionarMassaService;
@@ -85,4 +86,16 @@ public class ExemplarController {
 
         return ResponseEntity.status(207).body(resultado);
     }
+
+    @DeleteMapping(value = "/deletar-massa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DeletarMassaDto> deletarMassa(@RequestPart("arquivo") MultipartFile arquivo) {
+        DeletarMassaDto resultado = service.deletarEmMassa(arquivo);
+
+        if (resultado.sucesso() == 0) {
+            return ResponseEntity.badRequest().body(resultado);
+        }
+
+        return ResponseEntity.ok(resultado);
+    }
+
 }
