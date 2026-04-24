@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AdicionarMassaService {
@@ -110,13 +111,21 @@ public class AdicionarMassaService {
 
                     Condicao condicao = resolverCondicao(nomeCondicao);
 
-                    Exemplar exemplar = new Exemplar();
-                    exemplar.setLivro(livro);
-                    exemplar.setCondicao(condicao);
-                    exemplar.setPreco(preco);
-                    exemplar.setQuantidade(1);
+                    Optional<Exemplar> exemplarExistente = exemplarRepository
+                            .findByLivro_IdLivroAndCondicao_IdCondicao(livro.getIdLivro(), condicao.getIdCondicao());
 
-                    exemplarRepository.save(exemplar);
+                    if (exemplarExistente.isPresent()) {
+                        Exemplar exemplar = exemplarExistente.get();
+                        exemplar.setQuantidade(exemplar.getQuantidade() + 1);
+                        exemplarRepository.save(exemplar);
+                    } else {
+                        Exemplar exemplar = new Exemplar();
+                        exemplar.setLivro(livro);
+                        exemplar.setCondicao(condicao);
+                        exemplar.setPreco(preco);
+                        exemplar.setQuantidade(1);
+                        exemplarRepository.save(exemplar);
+                    }
                     sucesso++;
 
                 } catch (NumberFormatException e) {
