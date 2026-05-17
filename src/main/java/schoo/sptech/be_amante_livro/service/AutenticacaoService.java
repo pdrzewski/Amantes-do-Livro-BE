@@ -5,9 +5,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import schoo.sptech.be_amante_livro.dto.LoginDetalhesDto;
-import schoo.sptech.be_amante_livro.model.Login;
-import schoo.sptech.be_amante_livro.repository.LoginRepository;
+import schoo.sptech.be_amante_livro.dto.UsuarioDetalhesDto;
+import schoo.sptech.be_amante_livro.model.Usuario;
+import schoo.sptech.be_amante_livro.repository.UsuarioRepository;
 
 import java.util.Optional;
 
@@ -15,16 +15,16 @@ import java.util.Optional;
 public class AutenticacaoService implements UserDetailsService {
 
     @Autowired
-    private LoginRepository loginRepository;
+    private UsuarioRepository usuarioRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Login> loginOpt = loginRepository.findByUsuario(username);
+        Optional<Usuario> loginOpt = usuarioRepository.findByUsuario(username);
 
         if (loginOpt.isEmpty()) {
             throw new UsernameNotFoundException(String.format("usuário: %s não encontrado", username));
         }
 
-        return new LoginDetalhesDto(loginOpt.get());
+        return new UsuarioDetalhesDto(loginOpt.get());
     }
 }

@@ -2,14 +2,14 @@ package schoo.sptech.be_amante_livro.dto;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import schoo.sptech.be_amante_livro.model.Login;
+import schoo.sptech.be_amante_livro.model.Usuario;
 import java.util.Collection;
 
-public class LoginDetalhesDto implements UserDetails {
+public class UsuarioDetalhesDto implements UserDetails {
     private final String usuario;
     private final String senha;
 
-    public LoginDetalhesDto(Login login) {
+    public UsuarioDetalhesDto(Usuario login) {
         this.usuario = login.getUsuario();
         this.senha = login.getSenha();
     }

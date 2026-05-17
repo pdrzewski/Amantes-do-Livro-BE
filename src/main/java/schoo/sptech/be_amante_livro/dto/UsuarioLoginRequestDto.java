@@ -2,7 +2,7 @@ package schoo.sptech.be_amante_livro.dto;
 
 import org.hibernate.validator.constraints.NotBlank;
 
-public class LoginRequestDto {
+public class UsuarioLoginRequestDto {
 
     @NotBlank
     private String usuario;

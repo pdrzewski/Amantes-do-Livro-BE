@@ -15,11 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import schoo.sptech.be_amante_livro.dto.LoginRequestDto;
-import schoo.sptech.be_amante_livro.dto.LoginResponseDto;
-import schoo.sptech.be_amante_livro.dto.LoginSessaoDto;
-import schoo.sptech.be_amante_livro.dto.LoginTokenDto;
-import schoo.sptech.be_amante_livro.service.LoginService;
+import schoo.sptech.be_amante_livro.dto.*;
+import schoo.sptech.be_amante_livro.service.UsuarioService;
 
 import java.time.Duration;
 import java.util.List;
@@ -27,7 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/login")
 @Tag(name = "Autenticação", description = "Operações de cadastro de usuários, login, logout e consulta de usuários")
-public class LoginController {
+public class UsuarioController {
 
     public static final String COOKIE_NOME = "authToken";
 
@@ -35,33 +32,33 @@ public class LoginController {
     private long jwtValidity;
 
     @Autowired
-    private LoginService loginService;
+    private UsuarioService usuarioService;
 
     @Operation(summary = "Cadastrar usuário", description = "Cria um novo usuário no sistema. Não requer autenticação.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponseDto.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioLoginResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Dados inválidos (ex: usuário ou senha em branco)", content = @Content),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor", content = @Content)
     })
     @PostMapping("/cadastrar")
     @ResponseStatus(HttpStatus.CREATED)
-    public LoginResponseDto cadastrar(@RequestBody LoginRequestDto dto) {
-        return loginService.cadastrar(dto);
+    public UsuarioLoginResponseDto cadastrar(@RequestBody UsuarioCadastroDto dto) {
+        return usuarioService.cadastrar(dto);
     }
 
     @Operation(summary = "Entrar (login)", description = "Autentica o usuário e retorna um cookie JWT (authToken). Não requer autenticação prévia.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login realizado com sucesso. O cookie 'authToken' é definido automaticamente.",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginSessaoDto.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioSessaoDto.class))),
             @ApiResponse(responseCode = "400", description = "Credenciais inválidas ou dados incompletos", content = @Content),
             @ApiResponse(responseCode = "401", description = "Usuário ou senha incorretos", content = @Content),
             @ApiResponse(responseCode = "404", description = "Usuário não cadastrado", content = @Content),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor", content = @Content)
     })
     @PostMapping("/entrar")
-    public ResponseEntity<LoginSessaoDto> entrar(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
-        LoginTokenDto autenticado = loginService.autenticar(dto);
+    public ResponseEntity<UsuarioSessaoDto> entrar(@RequestBody UsuarioLoginRequestDto dto, HttpServletResponse response) {
+        UsuarioTokenDto autenticado = usuarioService.autenticar(dto);
 
         ResponseCookie cookie = ResponseCookie.from(COOKIE_NOME, autenticado.getToken())
                 .httpOnly(true)
@@ -73,7 +70,7 @@ public class LoginController {
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        LoginSessaoDto sessao = new LoginSessaoDto();
+        UsuarioSessaoDto sessao = new UsuarioSessaoDto();
         sessao.setUserId(autenticado.getUserId());
         sessao.setUsuario(autenticado.getUsuario());
 
@@ -97,28 +94,28 @@ public class LoginController {
     @Operation(summary = "Listar usuários", description = "Retorna todos os usuários cadastrados. Requer autenticação JWT.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponseDto.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioLoginResponseDto.class))),
             @ApiResponse(responseCode = "401", description = "Não autenticado - JWT ausente ou inválido", content = @Content),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor", content = @Content)
     })
     @GetMapping
-    public List<LoginResponseDto> listar() {
-        return loginService.listar();
+    public List<UsuarioLoginResponseDto> listar() {
+        return usuarioService.listar();
     }
 
     @Operation(summary = "Buscar usuário por ID", description = "Retorna os dados de um usuário específico pelo ID. Requer autenticação JWT.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário encontrado",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponseDto.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioLoginResponseDto.class))),
             @ApiResponse(responseCode = "401", description = "Não autenticado - JWT ausente ou inválido", content = @Content),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado para o ID informado", content = @Content),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor", content = @Content)
     })
     @GetMapping("/{id}")
-    public LoginResponseDto buscarPorId(
+    public UsuarioLoginResponseDto buscarPorId(
             @Parameter(description = "ID do usuário", example = "1", required = true)
             @PathVariable Integer id) {
-        return loginService.buscarPorId(id);
+        return usuarioService.buscarPorId(id);
     }
 }
 

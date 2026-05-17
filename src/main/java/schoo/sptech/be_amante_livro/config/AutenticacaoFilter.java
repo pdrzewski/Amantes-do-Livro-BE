@@ -16,7 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-import schoo.sptech.be_amante_livro.controller.LoginController;
+import schoo.sptech.be_amante_livro.controller.UsuarioController;
 import schoo.sptech.be_amante_livro.service.AutenticacaoService;
 
 import java.io.IOException;
@@ -59,7 +59,7 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (LoginController.COOKIE_NOME.equals(cookie.getName())) {
+                if (UsuarioController.COOKIE_NOME.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

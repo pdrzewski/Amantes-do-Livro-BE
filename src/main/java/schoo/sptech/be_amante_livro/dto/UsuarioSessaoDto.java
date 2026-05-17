@@ -1,6 +1,6 @@
 package schoo.sptech.be_amante_livro.dto;
 
-public class LoginSessaoDto {
+public class UsuarioSessaoDto {
     private Integer userId;
     private String usuario;
 
