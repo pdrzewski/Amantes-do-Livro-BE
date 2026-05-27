@@ -23,6 +23,7 @@ import schoo.sptech.be_amante_livro.repository.ExemplarRepository;
 import schoo.sptech.be_amante_livro.repository.LivroRepository;
 import schoo.sptech.be_amante_livro.service.LivroService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
@@ -205,6 +206,18 @@ public class LivroServiceTests {
             Assertions.assertEquals(2, resultado.size());
             Assertions.assertEquals("Clean Code", resultado.get(0).getTitulo());
             Assertions.assertEquals("The Pragmatic Programmer", resultado.get(1).getTitulo());
+            Mockito.verify(livroRepository, Mockito.times(1)).findAll();
+        }
+
+        @Test
+        @DisplayName("Deve retornar lista vazia quando não houver livros")
+        void deveRetornarListaVaziaQuandoNaoHouverLivros() {
+            Mockito.when(livroRepository.findAll()).thenReturn(Collections.emptyList());
+
+            List<LivroResponseDto> resultado = livroService.listar();
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertTrue(resultado.isEmpty());
             Mockito.verify(livroRepository, Mockito.times(1)).findAll();
         }
     }
