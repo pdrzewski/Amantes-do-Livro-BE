@@ -162,5 +162,20 @@ public class LivroServiceTests {
             Assertions.assertThrows(LivroNaoEncontradoException.class, () -> livroService.deletar(id));
             Mockito.verify(livroRepository, Mockito.never()).deleteById(any());
         }
+
+        @Test
+        @DisplayName("Deve lançar exceção ao deletar livro com exemplares cadastrados")
+        void deveLancarExcecaoAoDeletarLivroComExemplaresTest() {
+            Integer id = 1;
+
+            Livro livro = new Livro();
+            livro.setIdLivro(id);
+
+            Mockito.when(livroRepository.findById(id)).thenReturn(Optional.of(livro));
+            Mockito.when(exemplarRepository.existsByLivroIdLivro(id)).thenReturn(true);
+
+            Assertions.assertThrows(RuntimeException.class, () -> livroService.deletar(id));
+            Mockito.verify(livroRepository, Mockito.never()).deleteById(any());
+        }
     }
 }
