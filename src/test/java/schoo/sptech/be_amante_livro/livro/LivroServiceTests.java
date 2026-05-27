@@ -23,6 +23,7 @@ import schoo.sptech.be_amante_livro.repository.ExemplarRepository;
 import schoo.sptech.be_amante_livro.repository.LivroRepository;
 import schoo.sptech.be_amante_livro.service.LivroService;
 
+import java.util.List;
 import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -176,6 +177,35 @@ public class LivroServiceTests {
 
             Assertions.assertThrows(RuntimeException.class, () -> livroService.deletar(id));
             Mockito.verify(livroRepository, Mockito.never()).deleteById(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("deve testar metodo de listar")
+    class listar {
+
+        @Test
+        @DisplayName("Deve listar e retornar lista de livros")
+        void deveListarERetornarListaDeLivroComSucesso() {
+            Livro livro1 = new Livro();
+            livro1.setIdLivro(1);
+            livro1.setTitulo("Clean Code");
+
+            Livro livro2 = new Livro();
+            livro2.setIdLivro(2);
+            livro2.setTitulo("The Pragmatic Programmer");
+
+            List<Livro> livros = List.of(livro1, livro2);
+
+            Mockito.when(livroRepository.findAll()).thenReturn(livros);
+
+            List<LivroResponseDto> resultado = livroService.listar();
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertEquals(2, resultado.size());
+            Assertions.assertEquals("Clean Code", resultado.get(0).getTitulo());
+            Assertions.assertEquals("The Pragmatic Programmer", resultado.get(1).getTitulo());
+            Mockito.verify(livroRepository, Mockito.times(1)).findAll();
         }
     }
 }
