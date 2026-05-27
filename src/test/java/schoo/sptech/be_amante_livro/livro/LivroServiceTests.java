@@ -19,9 +19,12 @@ import schoo.sptech.be_amante_livro.model.Editora;
 import schoo.sptech.be_amante_livro.model.Livro;
 import schoo.sptech.be_amante_livro.repository.AutorRepository;
 import schoo.sptech.be_amante_livro.repository.EditoraRepository;
+import schoo.sptech.be_amante_livro.repository.ExemplarRepository;
 import schoo.sptech.be_amante_livro.repository.LivroRepository;
 import schoo.sptech.be_amante_livro.service.LivroService;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -37,6 +40,9 @@ public class LivroServiceTests {
 
     @Mock
     private EditoraRepository editoraRepository;
+
+    @Mock
+    private ExemplarRepository exemplarRepository;
 
     @InjectMocks
     private LivroService livroService;
@@ -125,6 +131,94 @@ public class LivroServiceTests {
             Mockito.when(livroRepository.findById(id)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LivroNaoEncontradoException.class, () -> livroService.buscarPorId(id));
+        }
+    }
+
+    @Nested
+    @DisplayName("Deve testar metodo de deletar")
+    class deletar {
+
+        @Test
+        @DisplayName("Deve testar metodo de deletar livro por ID")
+        void deveDeletarLivroComSucessoPorId () {
+            Integer id = 1;
+
+            Livro livro = new Livro();
+            livro.setIdLivro(id);
+
+            Mockito.when(livroRepository.findById(id)).thenReturn(Optional.of(livro));
+            Mockito.when(exemplarRepository.existsByLivroIdLivro(id)).thenReturn(false);
+
+            livroService.deletar(id);
+
+            Mockito.verify(livroRepository, Mockito.times(1)).deleteById(id);
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção ao deletar livro não encontrado")
+        void deveLancarExcecaoAoDeletarLivroNaoEncontradoTest() {
+            Integer id = 99;
+
+            Mockito.when(livroRepository.findById(id)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(LivroNaoEncontradoException.class, () -> livroService.deletar(id));
+            Mockito.verify(livroRepository, Mockito.never()).deleteById(any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção ao deletar livro com exemplares cadastrados")
+        void deveLancarExcecaoAoDeletarLivroComExemplaresTest() {
+            Integer id = 1;
+
+            Livro livro = new Livro();
+            livro.setIdLivro(id);
+
+            Mockito.when(livroRepository.findById(id)).thenReturn(Optional.of(livro));
+            Mockito.when(exemplarRepository.existsByLivroIdLivro(id)).thenReturn(true);
+
+            Assertions.assertThrows(RuntimeException.class, () -> livroService.deletar(id));
+            Mockito.verify(livroRepository, Mockito.never()).deleteById(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("deve testar metodo de listar")
+    class listar {
+
+        @Test
+        @DisplayName("Deve listar e retornar lista de livros")
+        void deveListarERetornarListaDeLivroComSucesso() {
+            Livro livro1 = new Livro();
+            livro1.setIdLivro(1);
+            livro1.setTitulo("Clean Code");
+
+            Livro livro2 = new Livro();
+            livro2.setIdLivro(2);
+            livro2.setTitulo("The Pragmatic Programmer");
+
+            List<Livro> livros = List.of(livro1, livro2);
+
+            Mockito.when(livroRepository.findAll()).thenReturn(livros);
+
+            List<LivroResponseDto> resultado = livroService.listar();
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertEquals(2, resultado.size());
+            Assertions.assertEquals("Clean Code", resultado.get(0).getTitulo());
+            Assertions.assertEquals("The Pragmatic Programmer", resultado.get(1).getTitulo());
+            Mockito.verify(livroRepository, Mockito.times(1)).findAll();
+        }
+
+        @Test
+        @DisplayName("Deve retornar lista vazia quando não houver livros")
+        void deveRetornarListaVaziaQuandoNaoHouverLivros() {
+            Mockito.when(livroRepository.findAll()).thenReturn(Collections.emptyList());
+
+            List<LivroResponseDto> resultado = livroService.listar();
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertTrue(resultado.isEmpty());
+            Mockito.verify(livroRepository, Mockito.times(1)).findAll();
         }
     }
 }
