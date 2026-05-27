@@ -38,34 +38,59 @@ public class LivroServiceTests {
     @InjectMocks
     private LivroService livroService;
 
-    @Test
-    @DisplayName("Deve cadastrar livro e retornar ResponseDto com sucesso")
-    void deveCadastrarLivroComSucessoTest() {
-        LivroRequestDto dto = new LivroRequestDto();
-        dto.setTitulo("Clean Code");
-        dto.setIdAutor(1);
-        dto.setIdEditora(1);
+    @Nested
+    @DisplayName("Deve testar o método de cadastrar")
+    class cadastrar {
+        @Test
+        @DisplayName("Deve cadastrar livro e retornar ResponseDto com sucesso")
+        void deveCadastrarLivroComSucessoTest() {
+            LivroRequestDto dto = new LivroRequestDto();
+            dto.setTitulo("Clean Code");
+            dto.setIdAutor(1);
+            dto.setIdEditora(1);
 
-        Autor autor = new Autor();
-        autor.setIdAutor(1);
+            Autor autor = new Autor();
+            autor.setIdAutor(1);
 
-        Editora editora = new Editora();
-        editora.setIdEditora(1);
+            Editora editora = new Editora();
+            editora.setIdEditora(1);
 
-        Livro livroSalvo = new Livro();
-        livroSalvo.setIdLivro(1);
-        livroSalvo.setTitulo("Clean Code");
-        livroSalvo.setAutor(autor);
-        livroSalvo.setEditora(editora);
+            Livro livroSalvo = new Livro();
+            livroSalvo.setIdLivro(1);
+            livroSalvo.setTitulo("Clean Code");
+            livroSalvo.setAutor(autor);
+            livroSalvo.setEditora(editora);
 
-        Mockito.when(autorRepository.findById(1)).thenReturn(Optional.of(autor));
-        Mockito.when(editoraRepository.findById(1)).thenReturn(Optional.of(editora));
-        Mockito.when(livroRepository.save(any())).thenReturn(livroSalvo);
+            Mockito.when(autorRepository.findById(1)).thenReturn(Optional.of(autor));
+            Mockito.when(editoraRepository.findById(1)).thenReturn(Optional.of(editora));
+            Mockito.when(livroRepository.save(any())).thenReturn(livroSalvo);
 
-        LivroResponseDto resultado = livroService.cadastrar(dto);
+            LivroResponseDto resultado = livroService.cadastrar(dto);
 
-        Assertions.assertNotNull(resultado);
-        Assertions.assertEquals(1, resultado.getIdLivro());
-        Assertions.assertEquals("Clean Code", resultado.getTitulo());
+            Assertions.assertNotNull(resultado);
+            Assertions.assertEquals(1, resultado.getIdLivro());
+            Assertions.assertEquals("Clean Code", resultado.getTitulo());
+        }
+
+        @Test
+        @DisplayName("Deve testar quando cadastro não retorna responseDTO")
+        void deveVerificarFalhaRetornoResponseQuandoCadastradoTest() {
+            LivroRequestDto dto = new LivroRequestDto();
+            dto.setTitulo("Clean Code");
+            dto.setIdAutor(1);
+            dto.setIdEditora(1);
+
+            Autor autor = new Autor();
+            autor.setIdAutor(1);
+
+            Editora editora = new Editora();
+            editora.setIdEditora(1);
+
+            Mockito.when(autorRepository.findById(1)).thenReturn(Optional.of(autor));
+            Mockito.when(editoraRepository.findById(1)).thenReturn(Optional.of(editora));
+            Mockito.when(livroRepository.save(any())).thenReturn(null);
+
+            Assertions.assertThrows(NullPointerException.class, () -> livroService.cadastrar(dto));
+        }
     }
 }
