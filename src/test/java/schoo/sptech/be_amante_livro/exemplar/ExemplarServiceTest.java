@@ -82,5 +82,48 @@ public class ExemplarServiceTest {
 
             Mockito.verify(exemplarRepository, Mockito.times(1)).save(Mockito.any(Exemplar.class));
         }
+
+        @Test
+        @DisplayName("deveLancarExcecaoQuandoLivroNaoEncontrado")
+        void deveLancarExcecaoQuandoLivroNaoEncontrado() {
+
+            ExemplarRequestDto request = new ExemplarRequestDto();
+            request.setIdLivro(99);
+            request.setIdCondicao(2);
+            request.setPreco(39.90);
+            request.setQuantidade(5);
+
+            Mockito.when(livroRepository.findById(99)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(RuntimeException.class, () -> {
+                exemplarService.cadastrar(request);
+            });
+
+            Mockito.verify(exemplarRepository, Mockito.never()).save(Mockito.any(Exemplar.class));
+        }
+
+        @Test
+        @DisplayName("deveLancarExcecaoQuandoCondicaoNaoEncontrada")
+        void deveLancarExcecaoQuandoCondicaoNaoEncontrada() {
+
+            ExemplarRequestDto request = new ExemplarRequestDto();
+            request.setIdLivro(1);
+            request.setIdCondicao(99);
+            request.setPreco(39.90);
+            request.setQuantidade(5);
+
+            Livro livro = new Livro();
+            livro.setIdLivro(1);
+            livro.setTitulo("Livro de Teste");
+
+            Mockito.when(livroRepository.findById(1)).thenReturn(Optional.of(livro));
+            Mockito.when(condicaoRepository.findById(99)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(RuntimeException.class, () -> {
+                exemplarService.cadastrar(request);
+            });
+
+            Mockito.verify(exemplarRepository, Mockito.never()).save(Mockito.any(Exemplar.class));
+        }
     }
 }
