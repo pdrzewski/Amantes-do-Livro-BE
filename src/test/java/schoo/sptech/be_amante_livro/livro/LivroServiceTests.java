@@ -19,6 +19,7 @@ import schoo.sptech.be_amante_livro.model.Editora;
 import schoo.sptech.be_amante_livro.model.Livro;
 import schoo.sptech.be_amante_livro.repository.AutorRepository;
 import schoo.sptech.be_amante_livro.repository.EditoraRepository;
+import schoo.sptech.be_amante_livro.repository.ExemplarRepository;
 import schoo.sptech.be_amante_livro.repository.LivroRepository;
 import schoo.sptech.be_amante_livro.service.LivroService;
 
@@ -37,6 +38,9 @@ public class LivroServiceTests {
 
     @Mock
     private EditoraRepository editoraRepository;
+
+    @Mock
+    private ExemplarRepository exemplarRepository;
 
     @InjectMocks
     private LivroService livroService;
@@ -125,6 +129,27 @@ public class LivroServiceTests {
             Mockito.when(livroRepository.findById(id)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LivroNaoEncontradoException.class, () -> livroService.buscarPorId(id));
+        }
+    }
+
+    @Nested
+    @DisplayName("Deve testar metodo de deletar")
+    class deletar {
+
+        @Test
+        @DisplayName("Deve testar metodo de deletar livro por ID")
+        void deveDeletarLivroComSucessoPorId () {
+            Integer id = 1;
+
+            Livro livro = new Livro();
+            livro.setIdLivro(id);
+
+            Mockito.when(livroRepository.findById(id)).thenReturn(Optional.of(livro));
+            Mockito.when(exemplarRepository.existsByLivroIdLivro(id)).thenReturn(false);
+
+            livroService.deletar(id);
+
+            Mockito.verify(livroRepository, Mockito.times(1)).deleteById(id);
         }
     }
 }
