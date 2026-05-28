@@ -201,4 +201,24 @@ public class ExemplarServiceTest {
             Mockito.verify(exemplarRepository, Mockito.times(1)).findAll();
         }
     }
+
+    @Nested
+    @DisplayName("Deve testar método de deletar")
+    class deletar {
+
+        @Test
+        @DisplayName("Deve testar o método deletar com sucesso")
+        void deveDeletarExemplarComSucessoTest() {
+            Integer id = 1;
+
+            Exemplar exemplar = new Exemplar();
+            exemplar.setIdExemplar(id);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.of(exemplar));
+
+            exemplarService.deletar(id);
+
+            Mockito.verify(exemplarRepository, Mockito.times(1)).deleteById(id);
+        }
+    }
 }
