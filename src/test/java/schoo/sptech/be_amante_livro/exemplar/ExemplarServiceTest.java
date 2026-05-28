@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import schoo.sptech.be_amante_livro.dto.ExemplarRequestDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarResponseDto;
+import schoo.sptech.be_amante_livro.exception.ExemplarNaoEncontradoException;
 import schoo.sptech.be_amante_livro.mapper.ExemplarMapper;
 import schoo.sptech.be_amante_livro.model.Condicao;
 import schoo.sptech.be_amante_livro.model.Exemplar;
@@ -20,6 +21,7 @@ import schoo.sptech.be_amante_livro.repository.ExemplarRepository;
 import schoo.sptech.be_amante_livro.repository.LivroRepository;
 import schoo.sptech.be_amante_livro.service.ExemplarService;
 
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -146,6 +148,44 @@ public class ExemplarServiceTest {
             Assertions.assertNotNull(resultado);
             Assertions.assertEquals(id, resultado.getIdExemplar());
             Mockito.verify(exemplarRepository, Mockito.times(1)).findById(id);
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando exemplar não encontrado pelo ID")
+        void deveLancarExcecaoQuandoExemplarNaoEncontradoPorIdTest() {
+            Integer id = 99;
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(ExemplarNaoEncontradoException.class, () -> exemplarService.buscarPorId(id));
+            Mockito.verify(exemplarRepository, Mockito.times(1)).findById(id);
+        }
+    }
+
+    @Nested
+    @DisplayName("Deve testar método de listar")
+    class listar {
+
+        @Test
+        @DisplayName("Deve testar o método listar com sucesso")
+        void deveListarExemplaresComSucessoTest() {
+            Exemplar exemplar1 = new Exemplar();
+            exemplar1.setIdExemplar(1);
+
+            Exemplar exemplar2 = new Exemplar();
+            exemplar2.setIdExemplar(2);
+
+            List<Exemplar> exemplares = List.of(exemplar1, exemplar2);
+
+            Mockito.when(exemplarRepository.findAll()).thenReturn(exemplares);
+
+            List<ExemplarResponseDto> resultado = exemplarService.listar();
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertEquals(2, resultado.size());
+            Assertions.assertEquals(1, resultado.get(0).getIdExemplar());
+            Assertions.assertEquals(2, resultado.get(1).getIdExemplar());
+            Mockito.verify(exemplarRepository, Mockito.times(1)).findAll();
         }
     }
 }
