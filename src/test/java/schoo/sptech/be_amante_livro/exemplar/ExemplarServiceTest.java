@@ -220,5 +220,16 @@ public class ExemplarServiceTest {
 
             Mockito.verify(exemplarRepository, Mockito.times(1)).deleteById(id);
         }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando exemplar não encontrado ao deletar")
+        void deveLancarExcecaoQuandoExemplarNaoEncontradoAoDeletarTest() {
+            Integer id = 99;
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(ExemplarNaoEncontradoException.class, () -> exemplarService.deletar(id));
+            Mockito.verify(exemplarRepository, Mockito.never()).deleteById(Mockito.any());
+        }
     }
 }
