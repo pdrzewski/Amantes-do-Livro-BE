@@ -232,4 +232,39 @@ public class ExemplarServiceTest {
             Mockito.verify(exemplarRepository, Mockito.never()).deleteById(Mockito.any());
         }
     }
+
+    @Nested
+    @DisplayName("Deve testar método de atualizar")
+    class atualizar {
+
+        @Test
+        @DisplayName("Deve atualizar um exemplar com sucesso")
+        void atualizaExemplarComSucessoTest() {
+            Integer id = 1;
+
+            ExemplarRequestDto dto = new ExemplarRequestDto();
+            dto.setIdLivro(1);
+            dto.setIdCondicao(1);
+            dto.setPreco(29.90);
+            dto.setQuantidade(5);
+
+            Livro livro = new Livro();
+            livro.setIdLivro(1);
+
+            Condicao condicao = new Condicao();
+            condicao.setIdCondicao(1);
+
+            Exemplar exemplar = new Exemplar();
+            exemplar.setIdExemplar(id);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.of(exemplar));
+            Mockito.when(livroRepository.findById(1)).thenReturn(Optional.of(livro));
+            Mockito.when(condicaoRepository.findById(1)).thenReturn(Optional.of(condicao));
+
+            ExemplarResponseDto resultado = exemplarService.atualizar(id, dto);
+
+            Assertions.assertNotNull(resultado);
+            Mockito.verify(exemplarRepository, Mockito.times(1)).save(exemplar);
+        }
+    }
 }
