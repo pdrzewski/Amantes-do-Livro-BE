@@ -126,4 +126,26 @@ public class ExemplarServiceTest {
             Mockito.verify(exemplarRepository, Mockito.never()).save(Mockito.any(Exemplar.class));
         }
     }
+
+    @Nested
+    @DisplayName("Deve testar método de buscar")
+    class buscar {
+
+        @Test
+        @DisplayName("Deve testar o método buscar por id com sucesso")
+        void deveBuscarExemplarPorIdComSucessoTest () {
+            Integer id = 1;
+
+            Exemplar exemplar = new Exemplar();
+            exemplar.setIdExemplar(id);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.of(exemplar));
+
+            ExemplarResponseDto resultado = exemplarService.buscarPorId(id);
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertEquals(id, resultado.getIdExemplar());
+            Mockito.verify(exemplarRepository, Mockito.times(1)).findById(id);
+        }
+    }
 }
