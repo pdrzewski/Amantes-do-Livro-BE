@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import schoo.sptech.be_amante_livro.dto.LivroRequestDto;
 import schoo.sptech.be_amante_livro.dto.LivroResponseDto;
 import schoo.sptech.be_amante_livro.exception.AutorNaoEncontradoException;
+import schoo.sptech.be_amante_livro.exception.EditoraNaoEncontradaException;
 import schoo.sptech.be_amante_livro.exception.LivroNaoEncontradoException;
 import schoo.sptech.be_amante_livro.model.Autor;
 import schoo.sptech.be_amante_livro.model.Editora;
@@ -302,6 +303,29 @@ public class LivroServiceTests {
         Mockito.when(autorRepository.findById(99)).thenReturn(Optional.empty());
 
         Assertions.assertThrows(AutorNaoEncontradoException.class, () -> livroService.atualizar(id, dto));
+        Mockito.verify(livroRepository, Mockito.never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando editora não encontrada ao atualizar")
+    void deveLancarExcecaoQuandoEditoraNaoEncontradaAoAtualizarTest() {
+        Integer id = 1;
+
+        LivroRequestDto dto = new LivroRequestDto();
+        dto.setIdAutor(1);
+        dto.setIdEditora(99);
+
+        Livro livro = new Livro();
+        livro.setIdLivro(id);
+
+        Autor autor = new Autor();
+        autor.setIdAutor(1);
+
+        Mockito.when(livroRepository.findById(id)).thenReturn(Optional.of(livro));
+        Mockito.when(autorRepository.findById(1)).thenReturn(Optional.of(autor));
+        Mockito.when(editoraRepository.findById(99)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(EditoraNaoEncontradaException.class, () -> livroService.atualizar(id, dto));
         Mockito.verify(livroRepository, Mockito.never()).save(any());
     }
 }
