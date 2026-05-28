@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import schoo.sptech.be_amante_livro.dto.LivroRequestDto;
 import schoo.sptech.be_amante_livro.dto.LivroResponseDto;
+import schoo.sptech.be_amante_livro.exception.AutorNaoEncontradoException;
 import schoo.sptech.be_amante_livro.exception.LivroNaoEncontradoException;
 import schoo.sptech.be_amante_livro.model.Autor;
 import schoo.sptech.be_amante_livro.model.Editora;
@@ -285,6 +286,23 @@ public class LivroServiceTests {
         Mockito.verify(livroRepository, Mockito.never()).save(any());
     }
 
+    @Test
+    @DisplayName("Deve lançar exceção quando autor não encontrado ao atualizar")
+    void deveLancarExcecaoQuandoAutorNaoEncontradoAoAtualizarTest() {
+        Integer id = 1;
 
+        LivroRequestDto dto = new LivroRequestDto();
+        dto.setIdAutor(99);
+        dto.setIdEditora(1);
+
+        Livro livro = new Livro();
+        livro.setIdLivro(id);
+
+        Mockito.when(livroRepository.findById(id)).thenReturn(Optional.of(livro));
+        Mockito.when(autorRepository.findById(99)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(AutorNaoEncontradoException.class, () -> livroService.atualizar(id, dto));
+        Mockito.verify(livroRepository, Mockito.never()).save(any());
+    }
 }
 
