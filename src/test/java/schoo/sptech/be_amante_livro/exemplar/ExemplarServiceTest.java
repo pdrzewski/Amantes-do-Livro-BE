@@ -266,5 +266,20 @@ public class ExemplarServiceTest {
             Assertions.assertNotNull(resultado);
             Mockito.verify(exemplarRepository, Mockito.times(1)).save(exemplar);
         }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando exemplar não encontrado ao atualizar")
+        void deveLancarExcecaoQuandoExemplarNaoEncontradoAoAtualizarTest() {
+            Integer id = 99;
+
+            ExemplarRequestDto dto = new ExemplarRequestDto();
+            dto.setIdLivro(1);
+            dto.setIdCondicao(1);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(ExemplarNaoEncontradoException.class, () -> exemplarService.atualizar(id, dto));
+            Mockito.verify(exemplarRepository, Mockito.never()).save(Mockito.any());
+        }
     }
 }
