@@ -269,5 +269,22 @@ public class LivroServiceTests {
             Mockito.verify(livroRepository, Mockito.times(1)).save(any());
         }
     }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando livro não encontrado ao atualizar")
+    void deveLancarExcecaoQuandoLivroNaoEncontradoAoAtualizarTest() {
+        Integer id = 99;
+
+        LivroRequestDto dto = new LivroRequestDto();
+        dto.setIdAutor(1);
+        dto.setIdEditora(1);
+
+        Mockito.when(livroRepository.findById(id)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(LivroNaoEncontradoException.class, () -> livroService.atualizar(id, dto));
+        Mockito.verify(livroRepository, Mockito.never()).save(any());
+    }
+
+
 }
 
