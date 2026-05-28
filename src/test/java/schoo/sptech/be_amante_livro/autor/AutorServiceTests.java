@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import schoo.sptech.be_amante_livro.dto.AutorResponseDto;
+import schoo.sptech.be_amante_livro.exception.AutorNaoEncontradoException;
 import schoo.sptech.be_amante_livro.model.Autor;
 import schoo.sptech.be_amante_livro.repository.AutorRepository;
 import schoo.sptech.be_amante_livro.service.AutorService;
@@ -26,8 +27,8 @@ public class AutorServiceTests {
    private AutorService autorService;
 
    @Nested
-   @DisplayName("Deve testar metodo de cadastrar")
-    class cadastrar {
+   @DisplayName("Deve testar metodo de buscar")
+    class buscar {
 
        @Test
        @DisplayName("Deve buscar autor por ID com sucesso")
@@ -45,6 +46,17 @@ public class AutorServiceTests {
            Assertions.assertNotNull(resultado);
            Assertions.assertEquals(id, resultado.getIdAutor());
            Assertions.assertEquals("Robert C. Martin", resultado.getNome());
+           Mockito.verify(autorRepository, Mockito.times(1)).findById(id);
+       }
+
+       @Test
+       @DisplayName("Deve lançar exceção quando autor não encontrado pelo ID")
+       void deveLancarExcecaoQuandoAutorNaoEncontradoPorIdTest() {
+           Integer id = 99;
+
+           Mockito.when(autorRepository.findById(id)).thenReturn(Optional.empty());
+
+           Assertions.assertThrows(AutorNaoEncontradoException.class, () -> autorService.buscarPorId(id));
            Mockito.verify(autorRepository, Mockito.times(1)).findById(id);
        }
    }
