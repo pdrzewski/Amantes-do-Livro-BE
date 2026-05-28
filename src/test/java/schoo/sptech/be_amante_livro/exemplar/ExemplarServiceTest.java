@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import schoo.sptech.be_amante_livro.dto.ExemplarRequestDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarResponseDto;
+import schoo.sptech.be_amante_livro.exception.CondicaoNaoEncontradaException;
 import schoo.sptech.be_amante_livro.exception.ExemplarNaoEncontradoException;
 import schoo.sptech.be_amante_livro.exception.LivroNaoEncontradoException;
 import schoo.sptech.be_amante_livro.mapper.ExemplarMapper;
@@ -299,6 +300,29 @@ public class ExemplarServiceTest {
             Mockito.when(livroRepository.findById(99)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LivroNaoEncontradoException.class, () -> exemplarService.atualizar(id, dto));
+            Mockito.verify(exemplarRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando condição não encontrada ao atualizar")
+        void deveLancarExcecaoQuandoCondicaoNaoEncontradaAoAtualizarTest() {
+            Integer id = 1;
+
+            ExemplarRequestDto dto = new ExemplarRequestDto();
+            dto.setIdLivro(1);
+            dto.setIdCondicao(99);
+
+            Exemplar exemplar = new Exemplar();
+            exemplar.setIdExemplar(id);
+
+            Livro livro = new Livro();
+            livro.setIdLivro(1);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.of(exemplar));
+            Mockito.when(livroRepository.findById(1)).thenReturn(Optional.of(livro));
+            Mockito.when(condicaoRepository.findById(99)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(CondicaoNaoEncontradaException.class, () -> exemplarService.atualizar(id, dto));
             Mockito.verify(exemplarRepository, Mockito.never()).save(Mockito.any());
         }
     }
