@@ -221,4 +221,52 @@ public class LivroServiceTests {
             Mockito.verify(livroRepository, Mockito.times(1)).findAll();
         }
     }
+
+    @Nested
+    @DisplayName("Deve testar metodo de atualizar")
+    class atualizar {
+
+        @Test
+        @DisplayName("Deve atualizar livro com sucesso")
+        void deveAtualizarLivroComSucessoTest() {
+            Integer id = 1;
+
+            LivroRequestDto dto = new LivroRequestDto();
+            dto.setTitulo("Clean Code Atualizado");
+            dto.setIsbn("123456789");
+            dto.setAnoPublicacao(2024);
+            dto.setIdAutor(1);
+            dto.setIdEditora(1);
+
+            Autor autor = new Autor();
+            autor.setIdAutor(1);
+
+            Editora editora = new Editora();
+            editora.setIdEditora(1);
+
+            Livro livroExistente = new Livro();
+            livroExistente.setIdLivro(id);
+            livroExistente.setTitulo("Clean Code");
+
+            Livro livroAtualizado = new Livro();
+            livroAtualizado.setIdLivro(id);
+            livroAtualizado.setTitulo("Clean Code Atualizado");
+            livroAtualizado.setIsbn("123456789");
+            livroAtualizado.setAnoPublicacao(2024);
+            livroAtualizado.setAutor(autor);
+            livroAtualizado.setEditora(editora);
+
+            Mockito.when(livroRepository.findById(id)).thenReturn(Optional.of(livroExistente));
+            Mockito.when(autorRepository.findById(1)).thenReturn(Optional.of(autor));
+            Mockito.when(editoraRepository.findById(1)).thenReturn(Optional.of(editora));
+            Mockito.when(livroRepository.save(any())).thenReturn(livroAtualizado);
+
+            LivroResponseDto resultado = livroService.atualizar(id, dto);
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertEquals("Clean Code Atualizado", resultado.getTitulo());
+            Assertions.assertEquals("123456789", resultado.getIsbn());
+            Mockito.verify(livroRepository, Mockito.times(1)).save(any());
+        }
+    }
 }
