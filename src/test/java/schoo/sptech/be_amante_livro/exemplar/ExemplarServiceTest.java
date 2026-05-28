@@ -21,6 +21,7 @@ import schoo.sptech.be_amante_livro.repository.ExemplarRepository;
 import schoo.sptech.be_amante_livro.repository.LivroRepository;
 import schoo.sptech.be_amante_livro.service.ExemplarService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -185,6 +186,18 @@ public class ExemplarServiceTest {
             Assertions.assertEquals(2, resultado.size());
             Assertions.assertEquals(1, resultado.get(0).getIdExemplar());
             Assertions.assertEquals(2, resultado.get(1).getIdExemplar());
+            Mockito.verify(exemplarRepository, Mockito.times(1)).findAll();
+        }
+
+        @Test
+        @DisplayName("Deve retornar lista vazia quando não houver exemplares")
+        void deveRetornarListaVaziaQuandoNaoHouverExemplaresTest() {
+            Mockito.when(exemplarRepository.findAll()).thenReturn(Collections.emptyList());
+
+            List<ExemplarResponseDto> resultado = exemplarService.listar();
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertTrue(resultado.isEmpty());
             Mockito.verify(exemplarRepository, Mockito.times(1)).findAll();
         }
     }
