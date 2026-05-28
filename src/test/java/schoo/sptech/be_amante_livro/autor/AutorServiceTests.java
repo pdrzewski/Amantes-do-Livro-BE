@@ -88,5 +88,17 @@ public class AutorServiceTests {
             Assertions.assertEquals("Robert C. Martin", resultado.getNome());
             Mockito.verify(autorRepository, Mockito.times(1)).save(Mockito.any());
         }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando save retorna nulo")
+        void deveLancarExcecaoQuandoSaveRetornaNuloTest() {
+            AutorRequestDto dto = new AutorRequestDto();
+            dto.setNome("Robert C. Martin");
+
+            Mockito.when(autorRepository.save(Mockito.any())).thenReturn(null);
+
+            Assertions.assertThrows(NullPointerException.class, () -> autorService.cadastrar(dto));
+            Mockito.verify(autorRepository, Mockito.times(1)).save(Mockito.any());
+        }
     }
 }
