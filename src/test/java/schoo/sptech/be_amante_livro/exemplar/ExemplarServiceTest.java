@@ -11,6 +11,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import schoo.sptech.be_amante_livro.dto.ExemplarRequestDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarResponseDto;
+import schoo.sptech.be_amante_livro.exception.CondicaoNaoEncontradaException;
+import schoo.sptech.be_amante_livro.exception.ExemplarNaoEncontradoException;
+import schoo.sptech.be_amante_livro.exception.LivroNaoEncontradoException;
 import schoo.sptech.be_amante_livro.mapper.ExemplarMapper;
 import schoo.sptech.be_amante_livro.model.Condicao;
 import schoo.sptech.be_amante_livro.model.Exemplar;
@@ -20,6 +23,8 @@ import schoo.sptech.be_amante_livro.repository.ExemplarRepository;
 import schoo.sptech.be_amante_livro.repository.LivroRepository;
 import schoo.sptech.be_amante_livro.service.ExemplarService;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -124,6 +129,201 @@ public class ExemplarServiceTest {
             });
 
             Mockito.verify(exemplarRepository, Mockito.never()).save(Mockito.any(Exemplar.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("Deve testar método de buscar")
+    class buscar {
+
+        @Test
+        @DisplayName("Deve testar o método buscar por id com sucesso")
+        void deveBuscarExemplarPorIdComSucessoTest () {
+            Integer id = 1;
+
+            Exemplar exemplar = new Exemplar();
+            exemplar.setIdExemplar(id);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.of(exemplar));
+
+            ExemplarResponseDto resultado = exemplarService.buscarPorId(id);
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertEquals(id, resultado.getIdExemplar());
+            Mockito.verify(exemplarRepository, Mockito.times(1)).findById(id);
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando exemplar não encontrado pelo ID")
+        void deveLancarExcecaoQuandoExemplarNaoEncontradoPorIdTest() {
+            Integer id = 99;
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(ExemplarNaoEncontradoException.class, () -> exemplarService.buscarPorId(id));
+            Mockito.verify(exemplarRepository, Mockito.times(1)).findById(id);
+        }
+    }
+
+    @Nested
+    @DisplayName("Deve testar método de listar")
+    class listar {
+
+        @Test
+        @DisplayName("Deve testar o método listar com sucesso")
+        void deveListarExemplaresComSucessoTest() {
+            Exemplar exemplar1 = new Exemplar();
+            exemplar1.setIdExemplar(1);
+
+            Exemplar exemplar2 = new Exemplar();
+            exemplar2.setIdExemplar(2);
+
+            List<Exemplar> exemplares = List.of(exemplar1, exemplar2);
+
+            Mockito.when(exemplarRepository.findAll()).thenReturn(exemplares);
+
+            List<ExemplarResponseDto> resultado = exemplarService.listar();
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertEquals(2, resultado.size());
+            Assertions.assertEquals(1, resultado.get(0).getIdExemplar());
+            Assertions.assertEquals(2, resultado.get(1).getIdExemplar());
+            Mockito.verify(exemplarRepository, Mockito.times(1)).findAll();
+        }
+
+        @Test
+        @DisplayName("Deve retornar lista vazia quando não houver exemplares")
+        void deveRetornarListaVaziaQuandoNaoHouverExemplaresTest() {
+            Mockito.when(exemplarRepository.findAll()).thenReturn(Collections.emptyList());
+
+            List<ExemplarResponseDto> resultado = exemplarService.listar();
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertTrue(resultado.isEmpty());
+            Mockito.verify(exemplarRepository, Mockito.times(1)).findAll();
+        }
+    }
+
+    @Nested
+    @DisplayName("Deve testar método de deletar")
+    class deletar {
+
+        @Test
+        @DisplayName("Deve testar o método deletar com sucesso")
+        void deveDeletarExemplarComSucessoTest() {
+            Integer id = 1;
+
+            Exemplar exemplar = new Exemplar();
+            exemplar.setIdExemplar(id);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.of(exemplar));
+
+            exemplarService.deletar(id);
+
+            Mockito.verify(exemplarRepository, Mockito.times(1)).deleteById(id);
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando exemplar não encontrado ao deletar")
+        void deveLancarExcecaoQuandoExemplarNaoEncontradoAoDeletarTest() {
+            Integer id = 99;
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(ExemplarNaoEncontradoException.class, () -> exemplarService.deletar(id));
+            Mockito.verify(exemplarRepository, Mockito.never()).deleteById(Mockito.any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Deve testar método de atualizar")
+    class atualizar {
+
+        @Test
+        @DisplayName("Deve atualizar um exemplar com sucesso")
+        void atualizaExemplarComSucessoTest() {
+            Integer id = 1;
+
+            ExemplarRequestDto dto = new ExemplarRequestDto();
+            dto.setIdLivro(1);
+            dto.setIdCondicao(1);
+            dto.setPreco(29.90);
+            dto.setQuantidade(5);
+
+            Livro livro = new Livro();
+            livro.setIdLivro(1);
+
+            Condicao condicao = new Condicao();
+            condicao.setIdCondicao(1);
+
+            Exemplar exemplar = new Exemplar();
+            exemplar.setIdExemplar(id);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.of(exemplar));
+            Mockito.when(livroRepository.findById(1)).thenReturn(Optional.of(livro));
+            Mockito.when(condicaoRepository.findById(1)).thenReturn(Optional.of(condicao));
+
+            ExemplarResponseDto resultado = exemplarService.atualizar(id, dto);
+
+            Assertions.assertNotNull(resultado);
+            Mockito.verify(exemplarRepository, Mockito.times(1)).save(exemplar);
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando exemplar não encontrado ao atualizar")
+        void deveLancarExcecaoQuandoExemplarNaoEncontradoAoAtualizarTest() {
+            Integer id = 99;
+
+            ExemplarRequestDto dto = new ExemplarRequestDto();
+            dto.setIdLivro(1);
+            dto.setIdCondicao(1);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(ExemplarNaoEncontradoException.class, () -> exemplarService.atualizar(id, dto));
+            Mockito.verify(exemplarRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando livro não encontrado ao atualizar")
+        void deveLancarExcecaoQuandoLivroNaoEncontradoAoAtualizarTest() {
+            Integer id = 1;
+
+            ExemplarRequestDto dto = new ExemplarRequestDto();
+            dto.setIdLivro(99);
+            dto.setIdCondicao(1);
+
+            Exemplar exemplar = new Exemplar();
+            exemplar.setIdExemplar(id);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.of(exemplar));
+            Mockito.when(livroRepository.findById(99)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(LivroNaoEncontradoException.class, () -> exemplarService.atualizar(id, dto));
+            Mockito.verify(exemplarRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        @Test
+        @DisplayName("Deve lançar exceção quando condição não encontrada ao atualizar")
+        void deveLancarExcecaoQuandoCondicaoNaoEncontradaAoAtualizarTest() {
+            Integer id = 1;
+
+            ExemplarRequestDto dto = new ExemplarRequestDto();
+            dto.setIdLivro(1);
+            dto.setIdCondicao(99);
+
+            Exemplar exemplar = new Exemplar();
+            exemplar.setIdExemplar(id);
+
+            Livro livro = new Livro();
+            livro.setIdLivro(1);
+
+            Mockito.when(exemplarRepository.findById(id)).thenReturn(Optional.of(exemplar));
+            Mockito.when(livroRepository.findById(1)).thenReturn(Optional.of(livro));
+            Mockito.when(condicaoRepository.findById(99)).thenReturn(Optional.empty());
+
+            Assertions.assertThrows(CondicaoNaoEncontradaException.class, () -> exemplarService.atualizar(id, dto));
+            Mockito.verify(exemplarRepository, Mockito.never()).save(Mockito.any());
         }
     }
 }
