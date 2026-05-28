@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import schoo.sptech.be_amante_livro.dto.LivroRequestDto;
 import schoo.sptech.be_amante_livro.dto.LivroResponseDto;
+import schoo.sptech.be_amante_livro.exception.AutorNaoEncontradoException;
+import schoo.sptech.be_amante_livro.exception.EditoraNaoEncontradaException;
 import schoo.sptech.be_amante_livro.exception.LivroNaoEncontradoException;
 import schoo.sptech.be_amante_livro.model.Autor;
 import schoo.sptech.be_amante_livro.model.Editora;
@@ -221,4 +223,110 @@ public class LivroServiceTests {
             Mockito.verify(livroRepository, Mockito.times(1)).findAll();
         }
     }
+
+    @Nested
+    @DisplayName("Deve testar metodo de atualizar")
+    class atualizar {
+
+        @Test
+        @DisplayName("Deve atualizar livro com sucesso")
+        void deveAtualizarLivroComSucessoTest() {
+            Integer id = 1;
+
+            LivroRequestDto dto = new LivroRequestDto();
+            dto.setTitulo("Clean Code Atualizado");
+            dto.setIsbn("123456789");
+            dto.setAnoPublicacao(2024);
+            dto.setIdAutor(1);
+            dto.setIdEditora(1);
+
+            Autor autor = new Autor();
+            autor.setIdAutor(1);
+
+            Editora editora = new Editora();
+            editora.setIdEditora(1);
+
+            Livro livroExistente = new Livro();
+            livroExistente.setIdLivro(id);
+            livroExistente.setTitulo("Clean Code");
+
+            Livro livroAtualizado = new Livro();
+            livroAtualizado.setIdLivro(id);
+            livroAtualizado.setTitulo("Clean Code Atualizado");
+            livroAtualizado.setIsbn("123456789");
+            livroAtualizado.setAnoPublicacao(2024);
+            livroAtualizado.setAutor(autor);
+            livroAtualizado.setEditora(editora);
+
+            Mockito.when(livroRepository.findById(id)).thenReturn(Optional.of(livroExistente));
+            Mockito.when(autorRepository.findById(1)).thenReturn(Optional.of(autor));
+            Mockito.when(editoraRepository.findById(1)).thenReturn(Optional.of(editora));
+            Mockito.when(livroRepository.save(any())).thenReturn(livroAtualizado);
+
+            LivroResponseDto resultado = livroService.atualizar(id, dto);
+
+            Assertions.assertNotNull(resultado);
+            Assertions.assertEquals("Clean Code Atualizado", resultado.getTitulo());
+            Assertions.assertEquals("123456789", resultado.getIsbn());
+            Mockito.verify(livroRepository, Mockito.times(1)).save(any());
+        }
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando livro não encontrado ao atualizar")
+    void deveLancarExcecaoQuandoLivroNaoEncontradoAoAtualizarTest() {
+        Integer id = 99;
+
+        LivroRequestDto dto = new LivroRequestDto();
+        dto.setIdAutor(1);
+        dto.setIdEditora(1);
+
+        Mockito.when(livroRepository.findById(id)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(LivroNaoEncontradoException.class, () -> livroService.atualizar(id, dto));
+        Mockito.verify(livroRepository, Mockito.never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando autor não encontrado ao atualizar")
+    void deveLancarExcecaoQuandoAutorNaoEncontradoAoAtualizarTest() {
+        Integer id = 1;
+
+        LivroRequestDto dto = new LivroRequestDto();
+        dto.setIdAutor(99);
+        dto.setIdEditora(1);
+
+        Livro livro = new Livro();
+        livro.setIdLivro(id);
+
+        Mockito.when(livroRepository.findById(id)).thenReturn(Optional.of(livro));
+        Mockito.when(autorRepository.findById(99)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(AutorNaoEncontradoException.class, () -> livroService.atualizar(id, dto));
+        Mockito.verify(livroRepository, Mockito.never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando editora não encontrada ao atualizar")
+    void deveLancarExcecaoQuandoEditoraNaoEncontradaAoAtualizarTest() {
+        Integer id = 1;
+
+        LivroRequestDto dto = new LivroRequestDto();
+        dto.setIdAutor(1);
+        dto.setIdEditora(99);
+
+        Livro livro = new Livro();
+        livro.setIdLivro(id);
+
+        Autor autor = new Autor();
+        autor.setIdAutor(1);
+
+        Mockito.when(livroRepository.findById(id)).thenReturn(Optional.of(livro));
+        Mockito.when(autorRepository.findById(1)).thenReturn(Optional.of(autor));
+        Mockito.when(editoraRepository.findById(99)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(EditoraNaoEncontradaException.class, () -> livroService.atualizar(id, dto));
+        Mockito.verify(livroRepository, Mockito.never()).save(any());
+    }
 }
+
