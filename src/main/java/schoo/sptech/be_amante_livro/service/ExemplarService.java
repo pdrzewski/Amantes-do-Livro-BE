@@ -1,10 +1,12 @@
 package schoo.sptech.be_amante_livro.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import schoo.sptech.be_amante_livro.dto.DeletarMassaDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarRequestDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarResponseDto;
+import schoo.sptech.be_amante_livro.events.LivroChegouEvent;
 import schoo.sptech.be_amante_livro.exception.CondicaoNaoEncontradaException;
 import schoo.sptech.be_amante_livro.exception.ExemplarNaoEncontradoException;
 import schoo.sptech.be_amante_livro.exception.LivroNaoEncontradoException;
@@ -29,14 +31,16 @@ public class ExemplarService {
     private final ExemplarRepository exemplarRepository;
     private final LivroRepository livroRepository;
     private final CondicaoRepository condicaoRepository;
+    private final ApplicationEventPublisher publisher;
 
     public ExemplarService(ExemplarRepository exemplarRepository,
                            LivroRepository livroRepository,
-                           CondicaoRepository condicaoRepository) {
+                           CondicaoRepository condicaoRepository, ApplicationEventPublisher publisher) {
 
         this.exemplarRepository = exemplarRepository;
         this.livroRepository = livroRepository;
         this.condicaoRepository = condicaoRepository;
+        this.publisher = publisher;
     }
 
     // CREATE
@@ -61,6 +65,9 @@ public class ExemplarService {
         );
 
         exemplarRepository.save(exemplar);
+        publisher.publishEvent(
+                new LivroChegouEvent(exemplar.getLivro().getIsbn())
+        );
 
         return ExemplarMapper.toResponse(exemplar);
     }
