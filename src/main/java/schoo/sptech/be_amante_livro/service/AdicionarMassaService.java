@@ -1,17 +1,17 @@
 package schoo.sptech.be_amante_livro.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import schoo.sptech.be_amante_livro.dto.AdicionarMassaDto;
+import schoo.sptech.be_amante_livro.events.LivroChegouEvent;
 import schoo.sptech.be_amante_livro.model.*;
 import schoo.sptech.be_amante_livro.repository.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AdicionarMassaService {
@@ -21,19 +21,21 @@ public class AdicionarMassaService {
     private final EditoraRepository editoraRepository;
     private final CondicaoRepository condicaoRepository;
     private final ExemplarRepository exemplarRepository;
+    private final ApplicationEventPublisher publisher;
 
 
 
     public AdicionarMassaService(LivroRepository livroRepository,
-                            AutorRepository autorRepository,
-                            EditoraRepository editoraRepository,
-                            CondicaoRepository condicaoRepository,
-                            ExemplarRepository exemplarRepository) {
+                                 AutorRepository autorRepository,
+                                 EditoraRepository editoraRepository,
+                                 CondicaoRepository condicaoRepository,
+                                 ExemplarRepository exemplarRepository, ApplicationEventPublisher publisher) {
         this.livroRepository = livroRepository;
         this.autorRepository = autorRepository;
         this.editoraRepository = editoraRepository;
         this.condicaoRepository = condicaoRepository;
         this.exemplarRepository = exemplarRepository;
+        this.publisher = publisher;
     }
 
     public AdicionarMassaDto importarEstanteVirtual(MultipartFile arquivo) {
@@ -45,6 +47,7 @@ public class AdicionarMassaService {
         List<String> erros = new ArrayList<>();
         int sucesso = 0;
         int totalLinhas = 0;
+        Set<String> livrosImportados = new HashSet<>();
 
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(arquivo.getInputStream(), StandardCharsets.UTF_8))) {
@@ -117,6 +120,7 @@ public class AdicionarMassaService {
                     if (exemplarExistente.isPresent()) {
                         Exemplar exemplar = exemplarExistente.get();
                         exemplar.setQuantidade(exemplar.getQuantidade() + 1);
+                        livrosImportados.add(exemplar.getLivro().getIsbn());
                         exemplarRepository.save(exemplar);
                     } else {
                         Exemplar exemplar = new Exemplar();
@@ -124,6 +128,7 @@ public class AdicionarMassaService {
                         exemplar.setCondicao(condicao);
                         exemplar.setPreco(preco);
                         exemplar.setQuantidade(1);
+                        livrosImportados.add(exemplar.getLivro().getIsbn());
                         exemplarRepository.save(exemplar);
                     }
                     sucesso++;
@@ -140,7 +145,11 @@ public class AdicionarMassaService {
         } catch (Exception e) {
             throw new RuntimeException("Erro ao ler o arquivo CSV: " + e.getMessage());
         }
-
+        for (String isbn : livrosImportados) {
+            publisher.publishEvent(
+                    new LivroChegouEvent(isbn)
+            );
+        }
         return new AdicionarMassaDto(totalLinhas, sucesso, erros.size(), erros);
     }
 
