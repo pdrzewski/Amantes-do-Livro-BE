@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mock.web.MockMultipartFile;
 import schoo.sptech.be_amante_livro.dto.AdicionarMassaDto;
 import schoo.sptech.be_amante_livro.model.Autor;
@@ -29,6 +30,9 @@ class AdicionarMassaServiceTests {
     @Mock private LivroRepository livroRepository;
     @Mock private ExemplarRepository exemplarRepository;
     @Mock private CondicaoRepository condicaoRepository;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private AdicionarMassaService service;

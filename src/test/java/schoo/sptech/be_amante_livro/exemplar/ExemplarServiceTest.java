@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import schoo.sptech.be_amante_livro.dto.ExemplarRequestDto;
 import schoo.sptech.be_amante_livro.dto.ExemplarResponseDto;
 import schoo.sptech.be_amante_livro.exception.CondicaoNaoEncontradaException;
@@ -41,6 +42,9 @@ public class ExemplarServiceTest {
 
     @InjectMocks
     private ExemplarService exemplarService;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Nested
     @DisplayName("Testes para o método cadastrar para exemplares")
